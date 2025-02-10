@@ -38,21 +38,38 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	config.DB.Where("email = ?", input.Email).First(&user)
+	// Check if user exists with the provided email
+	result := config.DB.Where("email = ?", input.Email).First(&user)
+	if result.Error != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
+		return
+	}
 
+	// Verify password
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(input.Password)); err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid Credentials"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
 		return
 	}
 
 	// Generate JWT Token
 	claims := jwt.MapClaims{
 		"userID": user.ID,
+		"email": user.Email,
 		"exp": time.Now().Add(time.Hour * 24).Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, _ := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
+	tokenString, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
+		return
+	}
 
-	c.JSON(http.StatusOK, gin.H{"token": tokenString})
+	c.JSON(http.StatusOK, gin.H{
+		"data": gin.H{
+			"id": user.ID,
+			"email": user.Email,
+			"token": tokenString,
+		},
+	})
 }

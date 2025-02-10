@@ -1,11 +1,13 @@
 package config
 
 import (
-	"os"
 	"fmt"
-	"gorm.io/gorm"
+	"os"
+
 	"github.com/joho/godotenv"
+	"github.com/kema-ray/home-budgeting-app/models"
 	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 // DB is the global database connection
@@ -31,5 +33,5 @@ func ConnectDatabase () {
 	}
 
 	fmt.Println("📌 Database connected successfully!")
-	// DB.AutoMigrate(&models.User{}, &models.Budget{}, &models.Expense{})
+	DB.AutoMigrate(&models.User{})
 }
