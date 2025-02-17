@@ -19,7 +19,10 @@ func SetupRoutes(router *gin.Engine) {
 	apiRoutes.Use(middleware.AuthMiddleware()) // Apply AuthMiddleware to all routes in apiRoutes
 	{
 		// Budget Routes
-		// apiRoutes.GET("/budgets", controller.GetBudgets)
+		apiRoutes.POST("/budgets", controller.AddBudget)
+		apiRoutes.GET("/list-budgets", controller.GetAllBudgets) // Get all budgets
+		apiRoutes.GET("/user/budgets", controller.GetUserBudgets) // Get budgets for the logged-in user
+
 
 		// Expense Routes
 		// apiRoutes.GET("/expenses", controller.GetExpenses)
