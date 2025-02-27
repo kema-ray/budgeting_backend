@@ -13,21 +13,32 @@ import (
 )
 
 func Register(c *gin.Context) {
-	var user models.User
-	if err := c.ShouldBindJSON(&user); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error})
+	var input models.RegisterUserInput
+
+	// Bind JSON request to struct & validate
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
-	user.Password = string(hashedPassword)
+	// Hash password
+	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
 
+	// Create new user
+	user := models.User{
+		Email:    input.Email,
+		Password: string(hashedPassword),
+	}
+
+	// Save to DB
 	if err := config.DB.Create(&user).Error; err != nil {
-		c.JSON( http.StatusInternalServerError, gin.H{"error": "Could not register user"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not register user"})
+		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "User Registered Successfully"})
 }
+
 
 func Login(c *gin.Context) {
 	var input models.User
