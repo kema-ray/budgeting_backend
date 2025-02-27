@@ -12,6 +12,7 @@ func SetupRoutes(router *gin.Engine) {
 	{
 		authRoutes.POST("/register", controller.Register)
 		authRoutes.POST("/login", controller.Login)
+		authRoutes.POST("/logout", controller.Logout)
 	}
 
 	// Protected routes(require JWT Token)
